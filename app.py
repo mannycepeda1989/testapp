@@ -3,6 +3,15 @@ import re
 import time
 from datetime import datetime
 
+# Add this near the top of your app.py if you want a "Help" tab
+tab1, tab2 = st.tabs(["Game", "Help & Commands"])
+
+with tab1:
+    # (Put all your game code here)
+    pass
+
+with tab2:
+    st.markdown(open("README.md").read())
 # --- 1. Expanded Game Data (25 Questions) ---
 MISSIONS = [
     {"lvl": 1, "task": "List files in the current directory.", "valid": [r"^ls$"], "exp": "ls = list."},
