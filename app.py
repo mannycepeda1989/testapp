@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 
 # --- 1. Custom 80s Vaporwave Aesthetics ---
-def 80s_css():
+def retro_80s_css():
     st.markdown("""
         <style>
         /* 80s Grid Background on Sidebar */
