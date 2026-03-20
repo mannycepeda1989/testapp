@@ -3,44 +3,74 @@ import re
 import time
 from datetime import datetime
 
-# --- 1. Custom CSS for Terminal Aesthetics ---
-def local_css():
+# --- 1. Custom 80s Vaporwave Aesthetics ---
+def 80s_css():
     st.markdown("""
         <style>
-        /* Main background and font */
-        .stApp {
-            background-color: #0e1117;
+        /* 80s Grid Background on Sidebar */
+        section[data-testid="stSidebar"] {
+            background-color: #110011;
+            background-image: 
+                linear-gradient(rgba(255, 0, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 0, 255, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+            background-position: center;
+            border-right: 2px solid #ff00ff;
+            box-shadow: 0 0 15px #ff00ff;
         }
-        /* Custom Terminal Box styling */
-        .terminal-text {
-            font-family: 'Courier New', Courier, monospace;
-            color: #00ff00;
-            background-color: #1a1a1a;
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid #333;
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.1);
+
+        /* Sunset Logo Style for Sidebar */
+        .sidebar-logo {
+            background: linear-gradient(#ff00cc, #3333ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'Trebuchet MS', sans-serif;
+            font-size: 30px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px #00ffff;
+            text-align: center;
             margin-bottom: 20px;
         }
-        /* Styling the text input to look like a prompt */
-        .stTextInput input {
-            background-color: #000 !important;
-            color: #00ff00 !important;
-            font-family: 'Courier New', Courier, monospace !important;
-            border: 1px solid #00ff00 !important;
+
+        /* Glowing Terminal CSS */
+        .terminal-box {
+            font-family: 'Courier New', Courier, monospace;
+            color: #00ffff; /* Cyan */
+            background-color: #000;
+            padding: 25px;
+            border-radius: 5px;
+            border: 2px solid #00ffff;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            margin-bottom: 25px;
+            text-shadow: 0 0 5px #00ffff;
         }
-        /* Sidebar styling */
-        section[data-testid="stSidebar"] {
-            background-color: #111;
-            border-right: 1px solid #333;
+
+        /* The Neon Input Prompt */
+        .stTextInput input {
+            background-color: #080808 !important;
+            color: #ff00ff !important; /* Neon Pink */
+            font-family: 'Courier New', Courier, monospace !important;
+            border: 1px solid #ff00ff !important;
+            box-shadow: 0 0 8px #ff00ff !important;
+        }
+
+        /* Scanline Effect Overlay */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0.1) 50%, rgba(0, 0, 0, 0.2) 50%);
+            background-size: 100% 4px;
+            z-index: -1;
+            pointer-events: none;
         }
         </style>
+        <div class="scanlines"></div>
     """, unsafe_allow_html=True)
 
-# --- 2. 25-Mission Database ---
+# --- 2. Mission Database (Levels 1-25) ---
 MISSIONS = [
-    {"lvl": 1, "task": "List files in the current directory.", "valid": [r"^ls$"], "hint": "Short for 'list'.", "exp": "ls = list."},
-    {"lvl": 2, "task": "List ALL files, including hidden ones.", "valid": [r"^ls\s+-a$", r"^ls\s+-la$"], "hint": "Use the -a flag.", "exp": "-a stands for 'all'."},
+    {"lvl": 1, "task": "List files in the current directory.", "valid": [r"^ls$"], "hint": "ls = list.", "exp": "ls = list."},
+    {"lvl": 2, "task": "List ALL files, including hidden ones.", "valid": [r"^ls\s+-a$", r"^ls\s+-la$"], "hint": "Use -a flag.", "exp": "-a stands for 'all'."},
     {"lvl": 3, "task": "Create a directory named 'backup'.", "valid": [r"^mkdir\s+backup$"], "effect": "📁 backup/", "hint": "mkdir = make directory.", "exp": "mkdir = make directory."},
     {"lvl": 4, "task": "Enter the 'backup' directory.", "valid": [r"^cd\s+backup$"], "hint": "cd = change directory.", "exp": "cd = change directory."},
     {"lvl": 5, "task": "Show the path of your current directory.", "valid": [r"^pwd$"], "hint": "Print Working Directory.", "exp": "pwd = print working directory."},
@@ -67,92 +97,92 @@ MISSIONS = [
 ]
 
 # --- 3. Session State ---
-if 'lvl_idx' not in st.session_state:
-    st.session_state.lvl_idx = 0
-if 'fs' not in st.session_state:
-    st.session_state.fs = ["📁 root/", "📄 .env", "📄 sys.log", "📄 script.sh"]
-if 'health' not in st.session_state:
-    st.session_state.health = 5
-if 'success_phase' not in st.session_state:
-    st.session_state.success_phase = False
-if 'history' not in st.session_state:
-    st.session_state.history = []
+if 'lvl_idx' not in st.session_state: st.session_state.lvl_idx = 0
+if 'fs' not in st.session_state: st.session_state.fs = ["📁 root/", "📄 .env", "📄 sys.log", "📄 script.sh"]
+if 'health' not in st.session_state: st.session_state.health = 5
+if 'success_phase' not in st.session_state: st.session_state.success_phase = False
+if 'history' not in st.session_state: st.session_state.history = []
 
-# --- 4. Main UI Logic ---
-local_css()
+# --- 4. Main UI ---
+80s_css()
 
 with st.sidebar:
-    st.title("📟 OS KERNEL")
-    st.metric("INTEGRITY", f"{st.session_state.health} HP")
+    st.markdown('<div class="sidebar-logo">TERMINAL // HERO</div>', unsafe_allow_html=True)
+    st.metric("DRIVE INTEGRITY", f"{st.session_state.health} HP")
     st.progress(st.session_state.lvl_idx / len(MISSIONS))
     st.divider()
-    st.write("**DRIVE MAP:**")
     for item in st.session_state.fs:
         st.caption(item)
     st.divider()
-    if st.button("FACTORY RESET"):
+    if st.button("RESET MEMORY"):
         for key in list(st.session_state.keys()): del st.session_state[key]
         st.rerun()
 
-st.title("🖥️ TERMINAL HERO v1.0")
+st.title("🖥️ KERNEL // QUEST")
 
 tab_game, tab_help = st.tabs(["🎮 LOGON", "📖 MANUAL"])
 
 with tab_help:
-    st.markdown("### 🔍 System Documentation")
-    st.code("Navigation: ls, cd, pwd\nFiles: mkdir, touch, cp, mv, rm\nNetwork: ping, ifconfig\nPower: |, >, grep, wc")
+    st.header("REFERENCE//MANUAL")
+    st.markdown("### Core Subsystems")
+    st.code("Navigation: ls, cd, pwd\nResources: mkdir, touch, cp, mv, rm\nNetwork: ping, ifconfig, ip addr\nLogic: grep, head, tail, man, find")
+    st.divider()
+    st.code("Advanced Piping: |\nAdvanced Redirection: >")
 
 with tab_game:
     if st.session_state.health <= 0:
-        st.error("🚫 KERNEL PANIC: SYSTEM FAILURE")
+        st.error("💀 KERNEL PANIC // SYSTEM FAILURE")
         if st.button("REBOOT"):
             for key in list(st.session_state.keys()): del st.session_state[key]
             st.rerun()
 
     elif st.session_state.lvl_idx >= len(MISSIONS):
         st.balloons()
-        st.header("🏆 ROOT ACCESS GRANTED")
-        st.success("You are now a Terminal Expert.")
-        st.download_button("💾 DOWNLOAD CERT", "Expert CLI Certificate", "cert.txt")
+        st.header("🏆 ROOT ACCESS CERTIFIED // 1989")
+        st.success("Logon Successful. Memory uploaded.")
+        st.download_button("💾 DOWNLOAD CERT", "Expert CLI Certificate // 1989", "cert.txt")
 
     else:
         current = MISSIONS[st.session_state.lvl_idx]
         
-        # Displaying the mission in a "Terminal Box"
+        if current['lvl'] >= 23: st.warning("🔥 BOSS LEVEL // COMPLEX PIPES")
+
+        # The Glowing Terminal Box
         st.markdown(f"""
-        <div class="terminal-text">
-            <strong>SYSTEM MISSION {st.session_state.lvl_idx + 1}:</strong><br>
+        <div class="terminal-box">
+            <strong>UNIT MISSION {st.session_state.lvl_idx + 1} / 25:</strong><br>
             {current['task']}
         </div>
         """, unsafe_allow_html=True)
         
         if st.button("💡 REQUEST HINT"):
-            st.toast(f"HINT: {current['hint']}")
+            st.toast(f"// ALERT // {current['hint']}")
         
+        # Neon Pink Input box
         cmd_input = st.text_input("admin@root:~$ ", key=f"q_{st.session_state.lvl_idx}").strip()
 
         if not st.session_state.success_phase:
-            if st.button("EXECUTE"):
+            if st.button("EXECUTE // RUN"):
                 st.session_state.history.append(cmd_input)
-                # Check regex
+                # Flexible regex check
                 if any(re.match(p, cmd_input.lower()) for p in current['valid']):
                     st.session_state.success_phase = True
                     if "effect" in current and current['effect'] not in st.session_state.fs:
                         st.session_state.fs.append(current['effect'])
                     st.rerun()
                 else:
-                    st.error("SYNTAX ERROR")
+                    st.error("SYNTAX ERROR // CMD NOT FOUND")
                     st.session_state.health -= 1
                     st.rerun()
         else:
-            st.success(f"COMMAND ACCEPTED: {current['exp']}")
+            st.success(f"// ACCESS ACCEPTED // {current['exp']}")
             if st.button("NEXT LEVEL ➡️"):
                 st.session_state.lvl_idx += 1
                 st.session_state.success_phase = False
                 st.rerun()
 
-    # Console Output (History) at the bottom
+    # Terminal History at the bottom
     if st.session_state.history:
-        with st.expander("CONSOLE LOGS"):
+        with st.expander("// CONSOLE HISTORY"):
             for cmd in st.session_state.history[-10:]:
-                st.text(f"Executed: {cmd}")
+                st.code(f"x> {cmd}")
