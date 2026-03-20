@@ -1,144 +1,140 @@
 import streamlit as st
-import pandas as pd
-import google.generativeai as genai
+import re
+from datetime import datetime
 
-# --- 1. Page Configuration ---
-st.set_page_config(page_title="GCP DevOps AI Quiz", page_icon="☁️", layout="centered")
+# --- Game Data Configuration ---
+MISSIONS = [
+    {
+        "level": 1,
+        "task": "List the contents of your directory to see what files are here.",
+        "valid_patterns": [r"^ls$", r"^ls\s-a$", r"^ls\s-la$"],
+        "explanation": "The 'ls' command (list) reveals files. Adding '-a' shows hidden files like .env!"
+    },
+    {
+        "level": 2,
+        "task": "Create a new directory named 'deploy' for your project.",
+        "valid_patterns": [r"^mkdir\s+deploy$"],
+        "effect": "deploy/",
+        "explanation": "'mkdir' stands for 'make directory'. It's essential for keeping your workspace clean."
+    },
+    {
+        "level": 3,
+        "task": "Create an empty file named 'requirements.txt'.",
+        "valid_patterns": [r"^touch\s+requirements\.txt$"],
+        "effect": "requirements.txt",
+        "explanation": "'touch' is the fastest way to create a new file or update a timestamp."
+    },
+    {
+        "level": "BOSS",
+        "task": "BOSS BATTLE: List all files and 'pipe' the output to find only the 'requirements.txt' file.",
+        "valid_patterns": [r"^ls\s*\|\s*grep\s+requirements\.txt$"],
+        "hint": "Use the pipe symbol '|' to connect 'ls' and 'grep'.",
+        "explanation": "You chained two programs! 'ls' outputted the list, and 'grep' filtered it for you."
+    }
+]
 
-# --- 2. AI Tutor Setup ---
-api_key = st.secrets.get("GEMINI_API_KEY")
+# --- Session State Initialization ---
+if 'lvl_idx' not in st.session_state:
+    st.session_state.lvl_idx = 0
+if 'fs' not in st.session_state:
+    st.session_state.fs = ["🏠 root/", "📄 .env", "📄 README.md"]
+if 'health' not in st.session_state:
+    st.session_state.health = 3
+if 'game_complete' not in st.session_state:
+    st.session_state.game_complete = False
 
-if api_key:
-    try:
-        genai.configure(api_key=api_key)
-        # Using 1.5-flash for speed and cost-efficiency
-        model = genai.GenerativeModel('gemini-1.5-flash')
-    except Exception as e:
-        st.error(f"❌ API Connection Error: {e}")
-        st.stop()
-else:
-    st.error("🔑 Please add your GEMINI_API_KEY to Streamlit Secrets.")
-    st.stop()
-
-# --- 3. Session State Management ---
-if 'idx' not in st.session_state: st.session_state.idx = 0
-if 'score' not in st.session_state: st.session_state.score = 0
-if 'answered' not in st.session_state: st.session_state.answered = False
-if 'explanation' not in st.session_state: st.session_state.explanation = ""
-if 'is_correct' not in st.session_state: st.session_state.is_correct = False
-if 'quiz_df' not in st.session_state: st.session_state.quiz_df = None
-
-def reset_quiz():
-    st.session_state.idx = 0
-    st.session_state.score = 0
-    st.session_state.answered = False
-    st.session_state.explanation = ""
-    st.session_state.is_correct = False
-    st.session_state.quiz_df = None
-
-# --- 4. Sidebar ---
+# --- Sidebar: Visual Filesystem ---
 with st.sidebar:
-    st.header("Quiz Settings")
-    do_shuffle = st.checkbox("Shuffle Questions", value=True)
-    if st.button("Reset & Restart"):
-        reset_quiz()
+    st.title("📂 System Navigator")
+    st.write("Current Workspace:")
+    for item in st.session_state.fs:
+        st.code(item)
+    
+    st.divider()
+    st.metric("System Integrity", f"{st.session_state.health}/3 ❤️")
+    
+    if st.button("Emergency Reboot (Reset)"):
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
         st.rerun()
 
-# --- 5. Main UI ---
-st.title("☁️ GCP DevOps Professional Exam")
-st.caption("AI-Powered Grading & Explanations")
+# --- Main Game UI ---
+st.title("🖥️ Terminal Hero: Command Quest")
+st.caption("Master the CLI and save the system.")
 
-uploaded_file = st.file_uploader("Upload gcp_full_bank.csv", type="csv")
+if st.session_state.health <= 0:
+    st.error("🚫 SYSTEM CRASHED. Too many syntax errors.")
+    if st.button("Reinstall OS (Restart)"):
+        st.session_state.lvl_idx = 0
+        st.session_state.health = 3
+        st.rerun()
 
-if uploaded_file:
-    if st.session_state.quiz_df is None:
-        try:
-            df = pd.read_csv(uploaded_file)
-            # We only drop rows missing the Question text now
-            df = df.dropna(subset=['Question'])
-            if do_shuffle:
-                df = df.sample(frac=1).reset_index(drop=True)
-            st.session_state.quiz_df = df
-        except Exception as e:
-            st.error(f"Error loading file: {e}")
-            st.stop()
+elif not st.session_state.game_complete:
+    current = MISSIONS[st.session_state.lvl_idx]
+    
+    # Progress UI
+    progress = (st.session_state.lvl_idx) / len(MISSIONS)
+    st.progress(progress)
+    
+    if current['level'] == "BOSS":
+        st.warning("⚠️ BOSS LEVEL: COMMAND CHAINING")
+    
+    st.info(f"**LEVEL {current['level']} MISSION:** {current['task']}")
+    
+    if "hint" in current:
+        with st.expander("Need a hint?"):
+            st.write(current['hint'])
 
-    df = st.session_state.quiz_df
-    total_q = len(df)
+    # Terminal Input
+    user_input = st.text_input("admin@streamlit:~$ ", placeholder="Type command...", key=f"in_{st.session_state.lvl_idx}")
 
-    if st.session_state.idx < total_q:
-        row = df.iloc[st.session_state.idx]
+    if st.button("Execute Command"):
+        # Regex check for flexibility (ignoring case and extra spaces)
+        is_correct = any(re.match(pattern, user_input.strip().lower()) for pattern in current['valid_patterns'])
         
-        st.write(f"### Question {st.session_state.idx + 1} of {total_q}")
-        st.info(row['Question'])
-        
-        # Clean options for display
-        options = [str(row['Option A']).strip(), 
-                   str(row['Option B']).strip(), 
-                   str(row['Option C']).strip(), 
-                   str(row['Option D']).strip()]
-        
-        user_choice = st.radio("Select your answer:", options, index=None, key=f"radio_{st.session_state.idx}")
-
-        if st.button("Check Answer") and user_choice and not st.session_state.answered:
-            st.session_state.answered = True
+        if is_correct:
+            st.success("🎯 Success! Command accepted.")
+            if "effect" in current and current['effect'] not in st.session_state.fs:
+                st.session_state.fs.append(current['effect'])
             
-            with st.spinner("AI Proctor is evaluating..."):
-                try:
-                    prompt = f"""
-                    You are an expert GCP Professional DevOps Engineer exam proctor.
-                    
-                    Question: {row['Question']}
-                    Options:
-                    A: {row['Option A']}
-                    B: {row['Option B']}
-                    C: {row['Option C']}
-                    D: {row['Option D']}
-                    
-                    The user chose: "{user_choice}"
-                    
-                    Task:
-                    1. Determine if the user's choice is the single most correct answer according to Google Cloud best practices and SRE principles.
-                    2. Provide a brief explanation of why it is correct or incorrect.
-                    
-                    Your response MUST start with either "RESULT: CORRECT" or "RESULT: INCORRECT" on the first line.
-                    Followed by "EXPLANATION: " and your text.
-                    """
-                    
-                    response = model.generate_content(prompt).text
-                    
-                    if "RESULT: CORRECT" in response:
-                        st.session_state.is_correct = True
-                        st.session_state.score += 1
-                    else:
-                        st.session_state.is_correct = False
-                        
-                    st.session_state.explanation = response.replace("RESULT: CORRECT", "").replace("RESULT: INCORRECT", "").replace("EXPLANATION:", "").strip()
-                
-                except Exception as e:
-                    st.session_state.explanation = f"AI Service Error: {e}"
-
-        # Display Feedback
-        if st.session_state.answered:
-            if st.session_state.is_correct:
-                st.success("🎯 Correct!")
+            st.write(f"💡 **Expert Insight:** {current['explanation']}")
+            
+            if st.session_state.lvl_idx < len(MISSIONS) - 1:
+                if st.button("Next Level ➡️"):
+                    st.session_state.lvl_idx += 1
+                    st.rerun()
             else:
-                st.error("❌ Incorrect")
-            
-            st.markdown(f"**Tutor Explanation:**\n{st.session_state.explanation}")
-            
-            if st.button("Next Question →"):
-                st.session_state.idx += 1
-                st.session_state.answered = False
-                st.session_state.explanation = ""
+                st.session_state.game_complete = True
                 st.rerun()
-
-    else:
-        st.balloons()
-        st.header("🏁 Exam Complete!")
-        st.metric("Final Score", f"{st.session_state.score} / {total_q}")
-        if st.button("Start Over"):
-            reset_quiz()
+        else:
+            st.error("❌ Bash: command not found or incorrect flags.")
+            st.session_state.health -= 1
             st.rerun()
+
 else:
-    st.info("Please upload your CSV to begin. The AI will handle the grading automatically.")
+    # Victory Screen
+    st.balloons()
+    st.header("🏆 Kernel Master Certified!")
+    st.success("You have successfully navigated the filesystem and mastered command piping.")
+    
+    # Generate Certificate Content
+    cert_text = f"""
+    ========================================
+    CERTIFICATE OF COMMAND LINE EXPERTISE
+    ========================================
+    This certifies that the user has completed 
+    the Terminal Hero Quest on {datetime.now().strftime('%Y-%m-%d')}.
+    
+    Skills Mastered:
+    - Filesystem Navigation (ls, pwd)
+    - Resource Management (mkdir, touch)
+    - Command Piping (grep, |)
+    ========================================
+    """
+    
+    st.download_button(
+        label="💾 Download Your Expert Certificate",
+        data=cert_text,
+        file_name="CLI_Expert_Certificate.txt",
+        mime="text/plain"
+    )
