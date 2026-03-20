@@ -138,4 +138,4 @@ if uploaded_file:
             reset_quiz()
             st.rerun()
 else:
-    st.info("Please upload your gcp_full_bank.csv file to begin.")
+    st.info("Please upload your file to begin.")
