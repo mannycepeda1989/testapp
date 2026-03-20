@@ -3,7 +3,7 @@ import re
 import time
 from datetime import datetime
 
-# --- 1. Custom Hollywood Hacker CSS ---
+# --- 1. Terminal Aesthetic CSS ---
 def apply_hacker_styles():
     st.markdown("""
         <style>
@@ -56,33 +56,33 @@ def apply_hacker_styles():
         </style>
     """, unsafe_allow_html=True)
 
-# --- 2. The Complete 25-Mission Database ---
+# --- 2. Professional 25-Mission Database ---
 MISSIONS = [
-    {"lvl": 1, "task": "LIST FILES IN THE CURRENT DIRECTORY.", "valid": [r"^ls$"], "hint": "ls", "exp": "DIRECTORY ENUMERATED."},
-    {"lvl": 2, "task": "IDENTIFY HIDDEN SYSTEM FILES.", "valid": [r"^ls\s+-a$", r"^ls\s+-la$"], "hint": "ls -a", "exp": "HIDDEN LAYERS REVEALED."},
-    {"lvl": 3, "task": "INITIALIZE DIRECTORY: 'BACKUP'.", "valid": [r"^mkdir\s+backup$"], "effect": "📁 backup/", "hint": "mkdir backup", "exp": "STORAGE SECTOR CREATED."},
-    {"lvl": 4, "task": "PENETRATE 'BACKUP' DIRECTORY.", "valid": [r"^cd\s+backup$"], "hint": "cd backup", "exp": "DIRECTORY ACCESSED."},
-    {"lvl": 5, "task": "LOCATE CURRENT SYSTEM COORDINATES.", "valid": [r"^pwd$"], "hint": "pwd", "exp": "COORDINATES CONFIRMED."},
-    {"lvl": 6, "task": "RETREAT TO PARENT NODE.", "valid": [r"^cd\s+\.\.$"], "hint": "cd ..", "exp": "UPLINK RESTORED."},
-    {"lvl": 7, "task": "CREATE SYSTEM LOG FILE: 'LOGS.TXT'.", "valid": [r"^touch\s+logs\.txt$"], "effect": "📄 logs.txt", "hint": "touch logs.txt", "exp": "FILE INITIALIZED."},
-    {"lvl": 8, "task": "RENAME 'LOGS.TXT' TO 'OLD_LOGS.TXT'.", "valid": [r"^mv\s+logs\.txt\s+old_logs\.txt$"], "effect": "📄 old_logs.txt", "hint": "mv [old] [new]", "exp": "RENAME SUCCESSFUL."},
-    {"lvl": 9, "task": "CLONE 'OLD_LOGS.TXT' TO 'LOGS_COPY.TXT'.", "valid": [r"^cp\s+old_logs\.txt\s+logs_copy\.txt$"], "effect": "📄 logs_copy.txt", "hint": "cp [src] [dest]", "exp": "DATA CLONED."},
-    {"lvl": 10, "task": "PURGE THE FILE 'LOGS_COPY.TXT'.", "valid": [r"^rm\s+logs_copy\.txt$"], "hint": "rm logs_copy.txt", "exp": "FILE DELETED."},
-    {"lvl": 11, "task": "BROADCAST 'HELLO' TO THE CONSOLE.", "valid": [r"^echo\s+hello$"], "hint": "echo hello", "exp": "SIGNAL SENT."},
-    {"lvl": 12, "task": "SEARCH 'SYS.LOG' FOR 'ERROR' STRINGS.", "valid": [r"^grep\s+error\s+sys\.log$"], "hint": "grep error sys.log", "exp": "VULNERABILITIES FOUND."},
-    {"lvl": 13, "task": "DISPLAY THE HEAD (TOP) OF 'SYS.LOG'.", "valid": [r"^head\s+sys\.log$"], "hint": "head sys.log", "exp": "HEADER READ."},
-    {"lvl": 14, "task": "DISPLAY THE LAST 5 LINES OF 'SYS.LOG'.", "valid": [r"^tail\s+-n\s+5\s+sys\.log$", r"^tail\s+-5\s+sys\.log$"], "hint": "tail -n 5 sys.log", "exp": "FOOTER READ."},
-    {"lvl": 15, "task": "WIPE THE TERMINAL BUFFER.", "valid": [r"^clear$"], "hint": "clear", "exp": "BUFFER PURGED."},
-    {"lvl": 16, "task": "ACCESS THE MANUAL FOR 'LS'.", "valid": [r"^man\s+ls$"], "hint": "man ls", "exp": "DOCUMENTATION ACCESSED."},
-    {"lvl": 17, "task": "GRANT EXECUTION ACCESS TO 'SCRIPT.SH'.", "valid": [r"^chmod\s+\+x\s+script\.sh$"], "hint": "chmod +x script.sh", "exp": "PERMISSIONS OVERRIDDEN."},
-    {"lvl": 18, "task": "PING EXTERNAL HOST 'GOOGLE.COM'.", "valid": [r"^ping\s+google\.com$"], "hint": "ping google.com", "exp": "PACKET EXCHANGED."},
-    {"lvl": 19, "task": "IDENTIFY NETWORK INTERFACE DATA.", "valid": [r"^ifconfig$", r"^ip\s+addr$"], "hint": "ifconfig or ip addr", "exp": "NETWORK MAPPED."},
-    {"lvl": 20, "task": "MONITOR RUNNING PROCESSES.", "valid": [r"^top$", r"^ps\s+aux$"], "hint": "top", "exp": "TASKS MONITORED."},
-    {"lvl": 21, "task": "ZIP 'BACKUP/' INTO 'ARCHIVE.ZIP'.", "valid": [r"^zip\s+archive\.zip\s+backup$"], "effect": "📦 archive.zip", "hint": "zip [out] [dir]", "exp": "COMPRESSION COMPLETE."},
-    {"lvl": 22, "task": "LOCATE ALL .TXT FILES IN LOCAL SCOPE.", "valid": [r"^find\s+\.\s+-name\s+\"\*\.txt\"$"], "hint": "find . -name \"*.txt\"", "exp": "FILES LOCATED."},
-    {"lvl": 23, "task": "BOSS: ENUMERATE NODES AND COUNT OUTPUT LINES.", "valid": [r"^ls\s*\|\s*wc\s+-l$"], "hint": "ls | wc -l", "exp": "NODES QUANTIFIED."},
-    {"lvl": 24, "task": "BOSS: FILTER 'SYS.LOG' FOR 'WARN' VIA PIPE.", "valid": [r"^cat\s+sys\.log\s*\|\s*grep\s+warn$"], "hint": "cat sys.log | grep warn", "exp": "WARNINGS ISOLATED."},
-    {"lvl": 25, "task": "FINAL BOSS: EXTRACT ERRORS TO 'ERRORS.TXT'.", "valid": [r"^grep\s+error\s+sys\.log\s*>\s*errors\.txt$"], "effect": "📄 errors.txt", "hint": "grep error sys.log > errors.txt", "exp": "BREACH SUCCESSFUL."}
+    {"lvl": 1, "task": "List all files in the current directory.", "valid": [r"^ls$"], "hint": "ls", "exp": "Command executed: ls"},
+    {"lvl": 2, "task": "List all files, including hidden files.", "valid": [r"^ls\s+-a$", r"^ls\s+-la$"], "hint": "ls -a", "exp": "Command executed: ls -a"},
+    {"lvl": 3, "task": "Create a new directory named 'backup'.", "valid": [r"^mkdir\s+backup$"], "effect": "📁 backup/", "hint": "mkdir [name]", "exp": "Directory created."},
+    {"lvl": 4, "task": "Change directory into the 'backup' folder.", "valid": [r"^cd\s+backup$"], "hint": "cd [name]", "exp": "Directory changed."},
+    {"lvl": 5, "task": "Print the current working directory path.", "valid": [r"^pwd$"], "hint": "pwd", "exp": "Path displayed."},
+    {"lvl": 6, "task": "Move up one level to the parent directory.", "valid": [r"^cd\s+\.\.$"], "hint": "cd ..", "exp": "Moved to parent."},
+    {"lvl": 7, "task": "Create an empty file named 'logs.txt'.", "valid": [r"^touch\s+logs\.txt$"], "effect": "📄 logs.txt", "hint": "touch [file]", "exp": "File created."},
+    {"lvl": 8, "task": "Rename 'logs.txt' to 'old_logs.txt'.", "valid": [r"^mv\s+logs\.txt\s+old_logs\.txt$"], "effect": "📄 old_logs.txt", "hint": "mv [old] [new]", "exp": "File renamed."},
+    {"lvl": 9, "task": "Copy 'old_logs.txt' to a new file 'logs_copy.txt'.", "valid": [r"^cp\s+old_logs\.txt\s+logs_copy\.txt$"], "effect": "📄 logs_copy.txt", "hint": "cp [src] [dest]", "exp": "File copied."},
+    {"lvl": 10, "task": "Delete the file 'logs_copy.txt'.", "valid": [r"^rm\s+logs_copy\.txt$"], "hint": "rm [file]", "exp": "File removed."},
+    {"lvl": 11, "task": "Print the string 'hello' to the terminal.", "valid": [r"^echo\s+hello$"], "hint": "echo [text]", "exp": "String printed."},
+    {"lvl": 12, "task": "Search for the string 'error' inside 'sys.log'.", "valid": [r"^grep\s+error\s+sys\.log$"], "hint": "grep [string] [file]", "exp": "Search complete."},
+    {"lvl": 13, "task": "Display the first 10 lines of 'sys.log'.", "valid": [r"^head\s+sys\.log$"], "hint": "head [file]", "exp": "File head displayed."},
+    {"lvl": 14, "task": "Display the last 5 lines of 'sys.log'.", "valid": [r"^tail\s+-n\s+5\s+sys\.log$", r"^tail\s+-5\s+sys\.log$"], "hint": "tail -n 5 [file]", "exp": "File tail displayed."},
+    {"lvl": 15, "task": "Clear all text from the terminal screen.", "valid": [r"^clear$"], "hint": "clear", "exp": "Screen cleared."},
+    {"lvl": 16, "task": "Open the manual page for the 'ls' command.", "valid": [r"^man\s+ls$"], "hint": "man [command]", "exp": "Manual opened."},
+    {"lvl": 17, "task": "Change 'script.sh' permissions to be executable.", "valid": [r"^chmod\s+\+x\s+script\.sh$"], "hint": "chmod +x [file]", "exp": "Permissions updated."},
+    {"lvl": 18, "task": "Check network connectivity to 'google.com'.", "valid": [r"^ping\s+google\.com$"], "hint": "ping [host]", "exp": "Ping response received."},
+    {"lvl": 19, "task": "Display current network interface configurations.", "valid": [r"^ifconfig$", r"^ip\s+addr$"], "hint": "ifconfig", "exp": "Network data displayed."},
+    {"lvl": 20, "task": "Display all currently running system processes.", "valid": [r"^top$", r"^ps\s+aux$"], "hint": "top", "exp": "Process list active."},
+    {"lvl": 21, "task": "Create a zip archive 'archive.zip' of the 'backup' folder.", "valid": [r"^zip\s+archive\.zip\s+backup$"], "effect": "📦 archive.zip", "hint": "zip [out] [dir]", "exp": "Archive created."},
+    {"lvl": 22, "task": "Find all files ending in '.txt' in the current directory.", "valid": [r"^find\s+\.\s+-name\s+\"\*\.txt\"$"], "hint": "find . -name \"*.txt\"", "exp": "Files located."},
+    {"lvl": 23, "task": "List files and pipe the output to count the lines.", "valid": [r"^ls\s*\|\s*wc\s+-l$"], "hint": "ls | wc -l", "exp": "Line count returned."},
+    {"lvl": 24, "task": "Read 'sys.log' and pipe output to search for 'warn'.", "valid": [r"^cat\s+sys\.log\s*\|\s*grep\s+warn$"], "hint": "cat [file] | grep [string]", "exp": "Filtered output displayed."},
+    {"lvl": 25, "task": "Search 'sys.log' for 'error' and redirect output to 'errors.txt'.", "valid": [r"^grep\s+error\s+sys\.log\s*>\s*errors\.txt$"], "effect": "📄 errors.txt", "hint": "grep [string] [file] > [output]", "exp": "Output redirected to file."}
 ]
 
 # --- 3. Session State ---
@@ -92,63 +92,63 @@ if 'health' not in st.session_state: st.session_state.health = 5
 if 'success_phase' not in st.session_state: st.session_state.success_phase = False
 if 'start_time' not in st.session_state: st.session_state.start_time = time.time()
 
-# --- 4. Main App ---
+# --- 4. UI Rendering ---
 apply_hacker_styles()
 
 with st.sidebar:
-    st.markdown("### // SYSTEM_STATUS")
+    st.markdown("### SYSTEM STATUS")
     st.metric("INTEGRITY", f"{st.session_state.health} HP")
     st.progress(st.session_state.lvl_idx / len(MISSIONS))
-    st.write(f"NODE: {st.session_state.lvl_idx + 1} / {len(MISSIONS)}")
+    st.write(f"Level: {st.session_state.lvl_idx + 1} / 25")
     st.divider()
-    st.write("**// VIRTUAL_DRIVE**")
+    st.write("**VIRTUAL DRIVE**")
     for item in st.session_state.fs:
         st.caption(f"> {item}")
-    if st.button("SYSTEM_WIPE"):
+    if st.button("RESET GAME"):
         for key in list(st.session_state.keys()): del st.session_state[key]
         st.rerun()
 
-st.title("// TERMINAL_HERO //")
+st.title("TERMINAL HERO: CLI TRAINER")
 
-tab_play, tab_man = st.tabs(["[MISSION_CONTROL]", "[DECRYPT_MANUAL]"])
+tab_game, tab_man = st.tabs(["[TERMINAL]", "[COMMAND_HELP]"])
 
 with tab_man:
-    st.markdown("### // COMMAND_DECRYPTION_TABLE")
-    st.code("NAV: ls, cd, pwd\nFILE: mkdir, touch, cp, mv, rm\nNET: ping, ifconfig\nPOWER: |, >, grep, wc, cat")
+    st.markdown("### QUICK REFERENCE")
+    st.code("Files: ls, mkdir, touch, cp, mv, rm, find\nNav: cd, pwd\nContent: grep, cat, head, tail, echo\nSystem: chmod, ping, ifconfig, top, man\nOperators: | (pipe), > (redirect)")
 
-with tab_play:
+with tab_game:
     if st.session_state.health <= 0:
-        st.error("// ACCESS_DENIED // SYSTEM_LOCKED")
-        if st.button("HARD_REBOOT"):
+        st.error("SYSTEM HALTED: TOO MANY ERRORS")
+        if st.button("RESTART SYSTEM"):
             for key in list(st.session_state.keys()): del st.session_state[key]
             st.rerun()
     elif st.session_state.lvl_idx >= len(MISSIONS):
         st.balloons()
-        st.header("// ROOT_ACCESS_GRANTED //")
+        st.header("TRAINING COMPLETE")
         duration = round(time.time() - st.session_state.start_time, 2)
-        st.success(f"Breach complete in {duration}s.")
-        st.download_button("💾 DOWNLOAD_DECRYPT_KEY", "ROOT_CERT_1989", "access.txt")
+        st.success(f"Final Time: {duration} seconds.")
+        st.download_button("DOWNLOAD CERTIFICATE", "CLI TRAINER COMPLETION CERTIFICATE", "cert.txt")
     else:
         current = MISSIONS[st.session_state.lvl_idx]
-        st.markdown(f'<div class="terminal-box">MISSION_{current["lvl"]}: {current["task"]}</div>', unsafe_allow_html=True)
-        if st.button("REQUEST_HINT"):
-            st.toast(f"// DECRYPTED: {current['hint']}")
+        st.markdown(f'<div class="terminal-box"><b>LEVEL {current["lvl"]}</b><br>{current["task"]}</div>', unsafe_allow_html=True)
+        if st.button("SHOW HINT"):
+            st.toast(f"HINT: {current['hint']}")
         
-        cmd = st.text_input("root@access:~$ ", key=f"q_{st.session_state.lvl_idx}").strip()
+        cmd = st.text_input("user@terminal:~$ ", key=f"q_{st.session_state.lvl_idx}").strip()
 
         if not st.session_state.success_phase:
-            if st.button("EXECUTE_COMMAND"):
+            if st.button("RUN COMMAND"):
                 if any(re.match(p, cmd.lower()) for p in current['valid']):
                     st.session_state.success_phase = True
                     if "effect" in current: st.session_state.fs.append(current['effect'])
                     st.rerun()
                 else:
-                    st.error("// COMMAND_ERROR //")
+                    st.error("SYNTAX ERROR")
                     st.session_state.health -= 1
                     st.rerun()
         else:
-            st.success(f"// {current['exp']}")
-            if st.button("PROCEED_TO_NEXT_SECTOR ➡️"):
+            st.success(f"CORRECT: {current['exp']}")
+            if st.button("CONTINUE ➡️"):
                 st.session_state.lvl_idx += 1
                 st.session_state.success_phase = False
                 st.rerun()
