@@ -104,7 +104,7 @@ if 'success_phase' not in st.session_state: st.session_state.success_phase = Fal
 if 'history' not in st.session_state: st.session_state.history = []
 
 # --- 4. Main UI ---
-80s_css()
+retro_80s_css()
 
 with st.sidebar:
     st.markdown('<div class="sidebar-logo">TERMINAL // HERO</div>', unsafe_allow_html=True)
