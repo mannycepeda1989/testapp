@@ -9,11 +9,12 @@ def apply_hacker_styles():
         .terminal-box { border: 1px solid #00FF41; padding: 20px; background: rgba(0, 20, 0, 0.9); box-shadow: 0 0 15px #00FF41; margin-bottom: 25px; }
         .stTextInput input { background-color: #000 !important; color: #00FF41 !important; border: 1px solid #00FF41 !important; }
         .error-hint { color: #FF3131; font-weight: bold; border: 1px solid #FF3131; padding: 10px; margin-top: 10px; background: rgba(50, 0, 0, 0.9); }
+        .lockdown { color: #FF0000; font-size: 30px; text-align: center; border: 5px solid #FF0000; padding: 50px; }
         </style>
     """, unsafe_allow_html=True)
 
-# --- 2. Mission Databases (60 Total) ---
-
+# --- 2. Mission Databases (Linux & Checkov) ---
+# (Databases remain identical to previous verified versions to ensure logical consistency)
 LINUX_MISSIONS = [
     {"lvl": 1, "task": "List files in the current directory.", "valid": [r"^ls$"], "hint": "ls"},
     {"lvl": 2, "task": "List all files, including hidden ones.", "valid": [r"^ls\s+-a$"], "hint": "ls -a"},
@@ -80,11 +81,14 @@ CHECKOV_MISSIONS = [
     {"lvl": 30, "task": "FINAL BOSS: Quiet, Soft-Fail, JSON, Directory '.'", "valid": [r".*--quiet.*--soft-fail.*-o\s+json.*-d\s+\..*"], "hint": "--quiet --soft-fail -o json -d ."}
 ]
 
-# --- 3. Session State Initialization ---
+# --- 3. Session State Logic ---
 state_defaults = {
     'linux_idx': 0, 
     'checkov_idx': 0, 
-    'health': 5, 
+    'score': 0,
+    'strikes': 0, 
+    'attempts_this_lvl': 0,
+    'locked_down': False,
     'last_error': "", 
     'success': False
 }
@@ -96,29 +100,36 @@ apply_hacker_styles()
 
 with st.sidebar:
     st.title("SEC-OPS HERO")
-    st.metric("INTEGRITY", f"{st.session_state.health} HP")
-    if st.button("RESET DATA"):
+    st.metric("TOTAL SCORE", f"{st.session_state.score} PTS")
+    st.write(f"CURRENT STRIKES: {'🔴' * st.session_state.strikes}{'⚪' * (3 - st.session_state.strikes)}")
+    
+    if st.button("RELOAD SYSTEM (RESET)"):
         for k in list(st.session_state.keys()): del st.session_state[k]
         st.rerun()
+
+if st.session_state.locked_down:
+    st.markdown('<div class="lockdown">🚨 SYSTEM LOCKDOWN 🚨<br>Too many failed attempts. Security breach suspected.</div>', unsafe_allow_html=True)
+    if st.button("REAUTHENTICATE (RESTART)"):
+        for k in list(st.session_state.keys()): del st.session_state[k]
+        st.rerun()
+    st.stop()
 
 tab_linux, tab_checkov, tab_ref = st.tabs(["📂 LINUX QUEST", "🛡️ CHECKOV FLAGS", "📖 REFERENCE"])
 
 with tab_ref:
     st.header("Checkov Parameter Reference")
-    st.caption("Threshold Logic: Checks equal to or above the chosen severity are included.")
     st.markdown("""
-    ### 🎯 Severity Thresholds
-    - `LOW`: Low, Medium, High, Critical.
-    - `MEDIUM`: Medium, High, Critical.
-    - `HIGH`: High, Critical.
-    - `CRITICAL`: Only Critical.
-
+    ### 🎯 Threshold Logic
+    - `HIGH`: Includes High & Critical.
+    - `MEDIUM`: Includes Medium, High, Critical.
+    - `LOW`: Includes everything.
+    
     ### 🛠️ Key Flags
-    - `--check [SEV/ID]`: Include only these.
-    - `--skip-check [SEV/ID]`: Exclude these.
-    - `--soft-fail`: Global exit 0.
-    - `--soft-fail-on [SEV]`: Exit 0 specifically for these.
-    - `--hard-fail-on [SEV]`: Force exit 1 for these.
+    - `--check`: Include only.
+    - `--skip-check`: Exclude.
+    - `--soft-fail`: Exit 0 global.
+    - `--soft-fail-on`: Exit 0 specific.
+    - `--hard-fail-on`: Force Exit 1.
     """)
 
 def play_level(missions, index_key):
@@ -130,27 +141,44 @@ def play_level(missions, index_key):
     current = missions[idx]
     st.markdown(f'<div class="terminal-box"><b>MISSION {idx + 1}:</b><br>{current["task"]}</div>', unsafe_allow_html=True)
     
+    # UI Control Row: Input and Hint
+    col_input, col_hint = st.columns([4, 1])
+    with col_hint:
+        if st.button("GET HINT", key=f"hint_btn_{index_key}_{idx}"):
+            st.info(f"HINT: {current['hint']}")
+
+    cmd = col_input.text_input("user@terminal:~$ ", key=f"in_{index_key}_{idx}").strip()
+    
     if st.session_state.last_error:
         st.markdown(f'<div class="error-hint">⚠️ SYNTAX ERROR: {st.session_state.last_error}</div>', unsafe_allow_html=True)
 
-    cmd = st.text_input("user@terminal:~$ ", key=f"in_{index_key}_{idx}", placeholder="Type command here...").strip()
-    
     if not st.session_state.success:
         if st.button("EXECUTE", key=f"ex_{index_key}_{idx}"):
             if any(re.search(p, cmd.lower()) for p in current['valid']):
+                # Scoring Logic
+                if st.session_state.attempts_this_lvl == 0: st.session_state.score += 100
+                elif st.session_state.attempts_this_lvl == 1: st.session_state.score += 50
+                else: st.session_state.score += 25
+                
                 st.session_state.success = True
                 st.session_state.last_error = ""
+                st.session_state.strikes = 0 # Reset strikes on success
                 st.rerun()
             else:
-                st.session_state.health -= 1
-                st.session_state.last_error = current['hint']
+                st.session_state.attempts_this_lvl += 1
+                st.session_state.strikes += 1
+                st.session_state.last_error = f"Invalid Command. Strike {st.session_state.strikes}/3"
+                
+                if st.session_state.strikes >= 3:
+                    st.session_state.locked_down = True
                 st.rerun()
     else:
-        st.success("ACCESS GRANTED.")
+        st.success(f"ACCESS GRANTED. +{100 if st.session_state.attempts_this_lvl == 0 else 50 if st.session_state.attempts_this_lvl == 1 else 25} PTS")
         if st.button("CONTINUE ➡️", key=f"nxt_{index_key}_{idx}"):
             st.session_state[index_key] += 1
             st.session_state.success = False
             st.session_state.last_error = ""
+            st.session_state.attempts_this_lvl = 0
             st.rerun()
 
 with tab_linux: play_level(LINUX_MISSIONS, 'linux_idx')
