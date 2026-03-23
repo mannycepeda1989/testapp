@@ -1,5 +1,6 @@
 import streamlit as st
 import re
+import pandas as pd
 
 # --- 1. Terminal Aesthetic CSS ---
 def apply_hacker_styles():
@@ -10,26 +11,28 @@ def apply_hacker_styles():
         .stTextInput input { background-color: #000 !important; color: #00FF41 !important; border: 1px solid #00FF41 !important; }
         .error-hint { color: #FF3131; font-weight: bold; border: 1px solid #FF3131; padding: 10px; margin-top: 10px; background: rgba(50, 0, 0, 0.9); }
         .lockdown { color: #FF0000; font-size: 30px; text-align: center; border: 5px solid #FF0000; padding: 50px; }
+        .stTabs [data-baseweb="tab-list"] { gap: 20px; }
+        .stTabs [data-baseweb="tab"] { background-color: #111; border: 1px solid #00FF41; color: #00FF41; padding: 10px 20px; }
         </style>
     """, unsafe_allow_html=True)
 
-# --- 2. Mission Databases (Linux & Checkov) ---
-# (Databases remain identical to previous verified versions to ensure logical consistency)
+# --- 2. Mission Databases ---
+
 LINUX_MISSIONS = [
     {"lvl": 1, "task": "List files in the current directory.", "valid": [r"^ls$"], "hint": "ls"},
     {"lvl": 2, "task": "List all files, including hidden ones.", "valid": [r"^ls\s+-a$"], "hint": "ls -a"},
     {"lvl": 3, "task": "Create a directory named 'infra'.", "valid": [r"^mkdir\s+infra$"], "hint": "mkdir infra"},
     {"lvl": 4, "task": "Change directory into 'infra'.", "valid": [r"^cd\s+infra$"], "hint": "cd infra"},
-    {"lvl": 5, "task": "Show the current working directory path.", "valid": [r"^pwd$"], "hint": "pwd"},
-    {"lvl": 6, "task": "Go back to the parent directory.", "valid": [r"^cd\s+\.\.$"], "hint": "cd .."},
+    {"lvl": 5, "task": "Show current working directory path.", "valid": [r"^pwd$"], "hint": "pwd"},
+    {"lvl": 6, "task": "Go back to parent directory.", "valid": [r"^cd\s+\.\.$"], "hint": "cd .."},
     {"lvl": 7, "task": "Create a file named 'main.tf'.", "valid": [r"^touch\s+main\.tf$"], "hint": "touch main.tf"},
     {"lvl": 8, "task": "Rename 'main.tf' to 'config.tf'.", "valid": [r"^mv\s+main\.tf\s+config\.tf$"], "hint": "mv main.tf config.tf"},
     {"lvl": 9, "task": "Copy 'config.tf' to 'backup.tf'.", "valid": [r"^cp\s+config\.tf\s+backup\.tf$"], "hint": "cp config.tf backup.tf"},
     {"lvl": 10, "task": "Delete 'backup.tf'.", "valid": [r"^rm\s+backup\.tf$"], "hint": "rm backup.tf"},
-    {"lvl": 11, "task": "Print 'Ready' to the terminal.", "valid": [r"^echo\s+ready$"], "hint": "echo ready"},
+    {"lvl": 11, "task": "Print 'Ready' to terminal.", "valid": [r"^echo\s+ready$"], "hint": "echo ready"},
     {"lvl": 12, "task": "Search for 'resource' in 'config.tf'.", "valid": [r"^grep\s+resource\s+config\.tf$"], "hint": "grep resource config.tf"},
     {"lvl": 13, "task": "View the top of 'config.tf'.", "valid": [r"^head\s+config\.tf$"], "hint": "head config.tf"},
-    {"lvl": 14, "task": "View the last 5 lines of 'config.tf'.", "valid": [r"^tail\s+-n\s+5\s+config\.tf$"], "hint": "tail -n 5 config.tf"},
+    {"lvl": 14, "task": "View last 5 lines of 'config.tf'.", "valid": [r"^tail\s+-n\s+5\s+config\.tf$"], "hint": "tail -n 5 config.tf"},
     {"lvl": 15, "task": "Clear terminal output.", "valid": [r"^clear$"], "hint": "clear"},
     {"lvl": 16, "task": "Open manual for 'chmod'.", "valid": [r"^man\s+chmod$"], "hint": "man chmod"},
     {"lvl": 17, "task": "Make 'scan.sh' executable.", "valid": [r"^chmod\s+\+x\s+scan\.sh$"], "hint": "chmod +x scan.sh"},
@@ -49,10 +52,10 @@ LINUX_MISSIONS = [
 ]
 
 CHECKOV_MISSIONS = [
-    {"lvl": 1, "task": "Scan the current directory (shorthand).", "valid": [r".*-d\s+\..*"], "hint": "-d ."},
+    {"lvl": 1, "task": "Scan current directory (shorthand).", "valid": [r".*-d\s+\..*"], "hint": "-d ."},
     {"lvl": 2, "task": "Scan 'main.tf' (shorthand).", "valid": [r".*-f\s+main\.tf.*"], "hint": "-f main.tf"},
-    {"lvl": 3, "task": "Run all checks 'HIGH' and above (threshold).", "valid": [r".*--check\s+high.*"], "hint": "Checkov is inclusive. Use --check HIGH."},
-    {"lvl": 4, "task": "Skip all checks 'MEDIUM' and below (threshold).", "valid": [r".*--skip-check\s+medium.*"], "hint": "Use --skip-check MEDIUM."},
+    {"lvl": 3, "task": "Run all checks 'HIGH' and above (inclusive threshold).", "valid": [r".*--check\s+high.*"], "hint": "Checkov is inclusive. --check HIGH covers High and Critical."},
+    {"lvl": 4, "task": "Skip all checks 'MEDIUM' and below.", "valid": [r".*--skip-check\s+medium.*"], "hint": "--skip-check MEDIUM"},
     {"lvl": 5, "task": "Run only check ID: CKV_AWS_20.", "valid": [r".*--check\s+ckv_aws_20.*"], "hint": "--check CKV_AWS_20"},
     {"lvl": 6, "task": "Limit scan to 'kubernetes' framework.", "valid": [r".*--framework\s+kubernetes.*"], "hint": "--framework kubernetes"},
     {"lvl": 7, "task": "Output in 'sarif' format.", "valid": [r".*-o\s+sarif.*"], "hint": "-o sarif"},
@@ -81,105 +84,130 @@ CHECKOV_MISSIONS = [
     {"lvl": 30, "task": "FINAL BOSS: Quiet, Soft-Fail, JSON, Directory '.'", "valid": [r".*--quiet.*--soft-fail.*-o\s+json.*-d\s+\..*"], "hint": "--quiet --soft-fail -o json -d ."}
 ]
 
-# --- 3. Session State Logic ---
+# --- 3. Session State ---
+if 'high_scores' not in st.session_state:
+    st.session_state.high_scores = []
+
 state_defaults = {
-    'linux_idx': 0, 
-    'checkov_idx': 0, 
-    'score': 0,
-    'strikes': 0, 
-    'attempts_this_lvl': 0,
-    'locked_down': False,
-    'last_error': "", 
-    'success': False
+    'linux_idx': 0, 'checkov_idx': 0, 'score': 0, 'strikes': 0, 
+    'attempts_this_lvl': 0, 'locked_down': False, 'last_error': "", 'success': False
 }
 for key, val in state_defaults.items():
     if key not in st.session_state: st.session_state[key] = val
 
-# --- 4. UI Rendering ---
+# --- 4. Logic Functions ---
+def save_score(username, score, exam_type):
+    name = username if username else "ANON_OPERATOR"
+    st.session_state.high_scores.append({"User": name, "Score": score, "Type": exam_type})
+
+# --- 5. UI Layout ---
 apply_hacker_styles()
 
 with st.sidebar:
     st.title("SEC-OPS HERO")
-    st.metric("TOTAL SCORE", f"{st.session_state.score} PTS")
-    st.write(f"CURRENT STRIKES: {'🔴' * st.session_state.strikes}{'⚪' * (3 - st.session_state.strikes)}")
+    st.metric("SESSION SCORE", f"{st.session_state.score} PTS")
+    st.write(f"STRIKES: {'🔴' * st.session_state.strikes}{'⚪' * (3 - st.session_state.strikes)}")
     
-    if st.button("RELOAD SYSTEM (RESET)"):
-        for k in list(st.session_state.keys()): del st.session_state[k]
+    if st.button("TERMINATE SESSION"):
+        for k in state_defaults.keys(): st.session_state[k] = state_defaults[k]
         st.rerun()
 
+    st.markdown("---")
+    st.subheader("🏆 HALL OF FAME")
+    if st.session_state.high_scores:
+        st.table(pd.DataFrame(st.session_state.high_scores).sort_values(by="Score", ascending=False).head(5))
+
 if st.session_state.locked_down:
-    st.markdown('<div class="lockdown">🚨 SYSTEM LOCKDOWN 🚨<br>Too many failed attempts. Security breach suspected.</div>', unsafe_allow_html=True)
-    if st.button("REAUTHENTICATE (RESTART)"):
-        for k in list(st.session_state.keys()): del st.session_state[k]
+    st.markdown('<div class="lockdown">🚨 SYSTEM LOCKDOWN 🚨<br>Three Consecutive Failures.</div>', unsafe_allow_html=True)
+    if st.button("RE-AUTHENTICATE (RESTART)"):
+        for k in state_defaults.keys(): st.session_state[k] = state_defaults[k]
         st.rerun()
     st.stop()
 
 tab_linux, tab_checkov, tab_ref = st.tabs(["📂 LINUX QUEST", "🛡️ CHECKOV FLAGS", "📖 REFERENCE"])
 
+# --- 6. Documentation Restoration ---
 with tab_ref:
-    st.header("Checkov Parameter Reference")
-    st.markdown("""
-    ### 🎯 Threshold Logic
-    - `HIGH`: Includes High & Critical.
-    - `MEDIUM`: Includes Medium, High, Critical.
-    - `LOW`: Includes everything.
-    
-    ### 🛠️ Key Flags
-    - `--check`: Include only.
-    - `--skip-check`: Exclude.
-    - `--soft-fail`: Exit 0 global.
-    - `--soft-fail-on`: Exit 0 specific.
-    - `--hard-fail-on`: Force Exit 1.
-    """)
+    st.header("CLI Technical Manual")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("🛡️ Checkov Logic")
+        st.markdown("""
+        **Severity Hierachy:**
+        *Checkov includes all checks equal to OR above selection.*
+        1. **LOW**: Everything.
+        2. **MEDIUM**: Med, High, Crit.
+        3. **HIGH**: High, Crit.
+        4. **CRITICAL**: Crit only.
+        
+        **Filtering:**
+        - `--check [SEV]`: Filter inclusion.
+        - `--skip-check [SEV]`: Filter exclusion.
+        """)
+    with col2:
+        st.subheader("⚙️ Pipeline Controls")
+        st.markdown("""
+        **Execution:**
+        - `--soft-fail`: Global exit 0.
+        - `--hard-fail-on [SEV]`: Exit 1 if SEV found.
+        - `--soft-fail-on [SEV]`: Exit 0 if SEV found.
+        
+        **Display:**
+        - `--quiet`: Failure output only.
+        - `--compact`: Hide code snippets.
+        """)
+    st.divider()
+    st.subheader("📂 Core Linux Commands")
+    st.code("ls | cd | pwd | mkdir | touch | mv | cp | rm | grep | chmod | chown | cat | find | echo | clear | man | ping | ip | ps | df | du | sort | wc | pipe (|) | redirect (>)")
 
-def play_level(missions, index_key):
+# --- 7. Play Engine ---
+def play_level(missions, index_key, label):
     idx = st.session_state[index_key]
     if idx >= len(missions):
-        st.success("SECTOR SECURED. ACCESS LEVEL: ELITE.")
+        st.balloons()
+        st.success(f"SYSTEM ACCESS GRANTED: {label} SECTOR CLEAR.")
+        with st.form(f"score_{label}"):
+            u = st.text_input("Username (Optional):")
+            if st.form_submit_button("SAVE SCORE"):
+                save_score(u, st.session_state.score, label)
+                st.session_state[index_key] = 0
+                st.session_state.score = 0
+                st.rerun()
         return
-    
+
     current = missions[idx]
     st.markdown(f'<div class="terminal-box"><b>MISSION {idx + 1}:</b><br>{current["task"]}</div>', unsafe_allow_html=True)
     
-    # UI Control Row: Input and Hint
-    col_input, col_hint = st.columns([4, 1])
-    with col_hint:
-        if st.button("GET HINT", key=f"hint_btn_{index_key}_{idx}"):
-            st.info(f"HINT: {current['hint']}")
-
-    cmd = col_input.text_input("user@terminal:~$ ", key=f"in_{index_key}_{idx}").strip()
+    c1, c2 = st.columns([4,1])
+    with c2: 
+        if st.button("HINT", key=f"h_{index_key}_{idx}"): st.info(f"HINT: {current['hint']}")
+    
+    cmd = c1.text_input("user@terminal:~$ ", key=f"i_{index_key}_{idx}").strip()
     
     if st.session_state.last_error:
-        st.markdown(f'<div class="error-hint">⚠️ SYNTAX ERROR: {st.session_state.last_error}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="error-hint">⚠️ {st.session_state.last_error}</div>', unsafe_allow_html=True)
 
     if not st.session_state.success:
-        if st.button("EXECUTE", key=f"ex_{index_key}_{idx}"):
+        if st.button("EXECUTE", key=f"e_{index_key}_{idx}"):
             if any(re.search(p, cmd.lower()) for p in current['valid']):
-                # Scoring Logic
-                if st.session_state.attempts_this_lvl == 0: st.session_state.score += 100
-                elif st.session_state.attempts_this_lvl == 1: st.session_state.score += 50
-                else: st.session_state.score += 25
-                
+                # Points: 100, 50, or 25
+                st.session_state.score += (100 if st.session_state.attempts_this_lvl == 0 else 50 if st.session_state.attempts_this_lvl == 1 else 25)
                 st.session_state.success = True
                 st.session_state.last_error = ""
-                st.session_state.strikes = 0 # Reset strikes on success
+                st.session_state.strikes = 0
                 st.rerun()
             else:
                 st.session_state.attempts_this_lvl += 1
                 st.session_state.strikes += 1
-                st.session_state.last_error = f"Invalid Command. Strike {st.session_state.strikes}/3"
-                
-                if st.session_state.strikes >= 3:
-                    st.session_state.locked_down = True
+                st.session_state.last_error = f"REJECTED. Strike {st.session_state.strikes}/3"
+                if st.session_state.strikes >= 3: st.session_state.locked_down = True
                 st.rerun()
     else:
-        st.success(f"ACCESS GRANTED. +{100 if st.session_state.attempts_this_lvl == 0 else 50 if st.session_state.attempts_this_lvl == 1 else 25} PTS")
-        if st.button("CONTINUE ➡️", key=f"nxt_{index_key}_{idx}"):
+        if st.button("CONTINUE ➡️", key=f"n_{index_key}_{idx}"):
             st.session_state[index_key] += 1
             st.session_state.success = False
-            st.session_state.last_error = ""
             st.session_state.attempts_this_lvl = 0
             st.rerun()
 
-with tab_linux: play_level(LINUX_MISSIONS, 'linux_idx')
-with tab_checkov: play_level(CHECKOV_MISSIONS, 'checkov_idx')
+with tab_linux: play_level(LINUX_MISSIONS, 'linux_idx', "LINUX")
+with tab_checkov: play_level(CHECKOV_MISSIONS, 'checkov_idx', "CHECKOV")
