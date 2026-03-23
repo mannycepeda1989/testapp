@@ -16,7 +16,7 @@ def apply_hacker_styles():
         </style>
     """, unsafe_allow_html=True)
 
-# --- 2. Mission Databases ---
+# --- 2. Mission Databases (Full 60 Mission Set) ---
 
 LINUX_MISSIONS = [
     {"lvl": 1, "task": "List files in the current directory.", "valid": [r"^ls$"], "hint": "ls"},
@@ -131,53 +131,74 @@ tab_linux, tab_checkov, tab_ref = st.tabs(["📂 LINUX QUEST", "🛡️ CHECKOV 
 
 # --- 6. Enhanced Technical Reference Manual ---
 with tab_ref:
-    st.header("⚡ CLOUD SECURITY & CLI TECH MANUAL")
-    st.info("Essential patterns for DevSecOps and the GCP DevOps Engineer Professional Exam.")
+    st.header("📖 THE COMPLETE MISSION MANUAL")
     
-    st.subheader("🛡️ Checkov Severity Logic")
-    st.caption("Thresholds are INCLUSIVE (Target + Everything Above).")
-    col_a, col_b = st.columns([2, 1])
-    with col_a:
+    col_ref_l, col_ref_r = st.columns(2)
+    
+    with col_ref_l:
+        st.subheader("🐧 Linux Command Index")
         st.markdown("""
-        | Flag | Resulting Scan Scope |
-        | :--- | :--- |
-        | `--check LOW` | **ALL** (Low, Med, High, Crit) |
-        | `--check MEDIUM` | Med, High, Crit |
-        | `--check HIGH` | High, Crit |
-        | `--check CRITICAL`| **ONLY** Critical |
-        """)
-    with col_b:
-        st.warning("**Pro-Tip:** To only block a build on High/Crit, use `--hard-fail-on HIGH`.")
-
-    st.divider()
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader("📂 Linux File System")
-        st.markdown("""
-        - `/etc`: Configuration files.
-        - `/var/log`: System and app logs.
-        - `/tmp`: Temporary files.
-        - `/bin`: Executable binaries.
-        - `~`: User's home directory.
-        """)
-    with col2:
-        st.subheader("🔐 Permissions (chmod)")
-        st.markdown("""
-        - `+x`: Make executable.
-        - `755`: Owner RWE, others RE.
-        - `644`: Owner RW, others R.
-        - `chown`: Change owner.
+        **File Navigation & Ops:**
+        - `ls`, `ls -a`: List (all/hidden).
+        - `cd ..`, `cd [dir]`: Move.
+        - `pwd`: Print working directory.
+        - `mkdir`, `touch`: Create dir/file.
+        - `mv`, `cp`, `rm`: Move, Copy, Delete.
+        
+        **Content & Search:**
+        - `echo`, `cat`: Print/View.
+        - `head`, `tail -n [x]`: View start/end.
+        - `grep [string] [file]`: Find text.
+        - `sort`, `wc -l`: Sort/Count lines.
+        - `find . -name [name]`: Locating files.
+        
+        **System & Networking:**
+        - `chmod +x`, `chown`: Permissions/Owner.
+        - `ps aux`, `top`, `kill [id]`: Processes.
+        - `df -h`, `du -sh`: Disk space/Dir size.
+        - `ip addr`, `ping -c 1`: Network.
+        - `man [cmd]`: Manual/Documentation.
+        
+        **Pipeline Power:**
+        - `|`: Pipe output to next command.
+        - `>`: Redirect output (overwrite file).
         """)
 
+    with col_ref_r:
+        st.subheader("🛡️ Checkov Security Flags")
+        st.markdown("""
+        **Targeting:**
+        - `-d .`: Scan directory.
+        - `-f [file]`: Scan file.
+        - `--framework [type]`: arm, kubernetes, etc.
+        
+        **Filtering (Inclusive Thresholds):**
+        - `--check [HIGH/LOW/ID]`: Include only.
+        - `--skip-check [MEDIUM/ID]`: Exclude.
+        - `--skip-path [path]`, `--skip-framework`: Ignore.
+        
+        **CI/CD Logic:**
+        - `--soft-fail`: Always Exit 0.
+        - `--soft-fail-on [SEV]`: Exit 0 on specific sev.
+        - `--hard-fail-on [SEV]`: Exit 1 on specific sev.
+        
+        **Output & Config:**
+        - `-o sarif`, `-o json,junitxml`: Formats.
+        - `--quiet`, `--compact`: Clean logs.
+        - `--show-config`: Current settings.
+        - `--config-file`, `--var-file`: External files.
+        - `--enable-secret-scan`: Look for keys.
+        - `--create-baseline`, `--baseline`: Baselines.
+        """)
+
     st.divider()
-    st.subheader("🚀 CI/CD Pipeline Logic")
+    st.subheader("🎯 GCP DevOps Mapping")
     st.markdown("""
-    - **Exit Code 0:** Success. **Exit Code 1:** Failure (Breaks build).
-    - `--soft-fail`: Forces Exit 0 regardless of findings.
-    - `--compact`: Hides code snippets for cleaner CI logs.
-    - `--quiet`: Shows failures only.
+    - **Checkov Scan** ➡️ Google Cloud Security Command Center (SCC)
+    - **Linux 'grep'** ➡️ `gcloud ... --filter="..."`
+    - **Linux 'ls' (Storage)** ➡️ `gsutil ls` or `gcloud storage ls`
+    - **CI/CD Logic** ➡️ Google Cloud Build YAML triggers and exit handling.
     """)
-    st.code("# GCP Equivalent: gcloud scc findings list --filter=\"severity:HIGH\"")
 
 # --- 7. Play Engine ---
 def play_level(missions, index_key, label):
