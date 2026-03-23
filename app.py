@@ -11,8 +11,8 @@ def apply_hacker_styles():
         .stTextInput input { background-color: #000 !important; color: #00FF41 !important; border: 1px solid #00FF41 !important; }
         .error-hint { color: #FF3131; font-weight: bold; border: 1px solid #FF3131; padding: 10px; margin-top: 10px; background: rgba(50, 0, 0, 0.9); }
         .lockdown { color: #FF0000; font-size: 30px; text-align: center; border: 5px solid #FF0000; padding: 50px; }
-        .stTabs [data-baseweb="tab-list"] { gap: 20px; }
-        .stTabs [data-baseweb="tab"] { background-color: #111; border: 1px solid #00FF41; color: #00FF41; padding: 10px 20px; }
+        .stTabs [data-baseweb="tab-list"] { gap: 15px; }
+        .stTabs [data-baseweb="tab"] { background-color: #050505; border: 1px solid #00FF41; color: #00FF41; }
         </style>
     """, unsafe_allow_html=True)
 
@@ -84,7 +84,7 @@ CHECKOV_MISSIONS = [
     {"lvl": 30, "task": "FINAL BOSS: Quiet, Soft-Fail, JSON, Directory '.'", "valid": [r".*--quiet.*--soft-fail.*-o\s+json.*-d\s+\..*"], "hint": "--quiet --soft-fail -o json -d ."}
 ]
 
-# --- 3. Session State ---
+# --- 3. Session State Initialization ---
 if 'high_scores' not in st.session_state:
     st.session_state.high_scores = []
 
@@ -100,6 +100,10 @@ def save_score(username, score, exam_type):
     name = username if username else "ANON_OPERATOR"
     st.session_state.high_scores.append({"User": name, "Score": score, "Type": exam_type})
 
+def reset_session():
+    for k in state_defaults.keys(): st.session_state[k] = state_defaults[k]
+    st.rerun()
+
 # --- 5. UI Layout ---
 apply_hacker_styles()
 
@@ -108,67 +112,82 @@ with st.sidebar:
     st.metric("SESSION SCORE", f"{st.session_state.score} PTS")
     st.write(f"STRIKES: {'🔴' * st.session_state.strikes}{'⚪' * (3 - st.session_state.strikes)}")
     
-    if st.button("TERMINATE SESSION"):
-        for k in state_defaults.keys(): st.session_state[k] = state_defaults[k]
-        st.rerun()
+    if st.button("TERMINATE SESSION"): reset_session()
 
     st.markdown("---")
     st.subheader("🏆 HALL OF FAME")
     if st.session_state.high_scores:
-        st.table(pd.DataFrame(st.session_state.high_scores).sort_values(by="Score", ascending=False).head(5))
+        df = pd.DataFrame(st.session_state.high_scores)
+        st.table(df.sort_values(by="Score", ascending=False).head(5))
+    else:
+        st.caption("No records on file.")
 
 if st.session_state.locked_down:
-    st.markdown('<div class="lockdown">🚨 SYSTEM LOCKDOWN 🚨<br>Three Consecutive Failures.</div>', unsafe_allow_html=True)
-    if st.button("RE-AUTHENTICATE (RESTART)"):
-        for k in state_defaults.keys(): st.session_state[k] = state_defaults[k]
-        st.rerun()
+    st.markdown('<div class="lockdown">🚨 SYSTEM LOCKDOWN 🚨<br>Too many consecutive failures detected.</div>', unsafe_allow_html=True)
+    if st.button("RE-AUTHENTICATE"): reset_session()
     st.stop()
 
 tab_linux, tab_checkov, tab_ref = st.tabs(["📂 LINUX QUEST", "🛡️ CHECKOV FLAGS", "📖 REFERENCE"])
 
-# --- 6. Documentation Restoration ---
+# --- 6. Enhanced Technical Reference Manual ---
 with tab_ref:
-    st.header("CLI Technical Manual")
+    st.header("⚡ CLOUD SECURITY & CLI TECH MANUAL")
+    st.info("Essential patterns for DevSecOps and the GCP DevOps Engineer Professional Exam.")
+    
+    st.subheader("🛡️ Checkov Severity Logic")
+    st.caption("Thresholds are INCLUSIVE (Target + Everything Above).")
+    col_a, col_b = st.columns([2, 1])
+    with col_a:
+        st.markdown("""
+        | Flag | Resulting Scan Scope |
+        | :--- | :--- |
+        | `--check LOW` | **ALL** (Low, Med, High, Crit) |
+        | `--check MEDIUM` | Med, High, Crit |
+        | `--check HIGH` | High, Crit |
+        | `--check CRITICAL`| **ONLY** Critical |
+        """)
+    with col_b:
+        st.warning("**Pro-Tip:** To only block a build on High/Crit, use `--hard-fail-on HIGH`.")
+
+    st.divider()
     col1, col2 = st.columns(2)
     with col1:
-        st.subheader("🛡️ Checkov Logic")
+        st.subheader("📂 Linux File System")
         st.markdown("""
-        **Severity Hierachy:**
-        *Checkov includes all checks equal to OR above selection.*
-        1. **LOW**: Everything.
-        2. **MEDIUM**: Med, High, Crit.
-        3. **HIGH**: High, Crit.
-        4. **CRITICAL**: Crit only.
-        
-        **Filtering:**
-        - `--check [SEV]`: Filter inclusion.
-        - `--skip-check [SEV]`: Filter exclusion.
+        - `/etc`: Configuration files.
+        - `/var/log`: System and app logs.
+        - `/tmp`: Temporary files.
+        - `/bin`: Executable binaries.
+        - `~`: User's home directory.
         """)
     with col2:
-        st.subheader("⚙️ Pipeline Controls")
+        st.subheader("🔐 Permissions (chmod)")
         st.markdown("""
-        **Execution:**
-        - `--soft-fail`: Global exit 0.
-        - `--hard-fail-on [SEV]`: Exit 1 if SEV found.
-        - `--soft-fail-on [SEV]`: Exit 0 if SEV found.
-        
-        **Display:**
-        - `--quiet`: Failure output only.
-        - `--compact`: Hide code snippets.
+        - `+x`: Make executable.
+        - `755`: Owner RWE, others RE.
+        - `644`: Owner RW, others R.
+        - `chown`: Change owner.
         """)
+
     st.divider()
-    st.subheader("📂 Core Linux Commands")
-    st.code("ls | cd | pwd | mkdir | touch | mv | cp | rm | grep | chmod | chown | cat | find | echo | clear | man | ping | ip | ps | df | du | sort | wc | pipe (|) | redirect (>)")
+    st.subheader("🚀 CI/CD Pipeline Logic")
+    st.markdown("""
+    - **Exit Code 0:** Success. **Exit Code 1:** Failure (Breaks build).
+    - `--soft-fail`: Forces Exit 0 regardless of findings.
+    - `--compact`: Hides code snippets for cleaner CI logs.
+    - `--quiet`: Shows failures only.
+    """)
+    st.code("# GCP Equivalent: gcloud scc findings list --filter=\"severity:HIGH\"")
 
 # --- 7. Play Engine ---
 def play_level(missions, index_key, label):
     idx = st.session_state[index_key]
     if idx >= len(missions):
         st.balloons()
-        st.success(f"SYSTEM ACCESS GRANTED: {label} SECTOR CLEAR.")
+        st.success(f"CONGRATULATIONS! {label} SECTOR CLEAR.")
         with st.form(f"score_{label}"):
-            u = st.text_input("Username (Optional):")
-            if st.form_submit_button("SAVE SCORE"):
+            u = st.text_input("Enter Username (Optional):", placeholder="GhostInTheShell")
+            if st.form_submit_button("SUBMIT SCORE"):
                 save_score(u, st.session_state.score, label)
                 st.session_state[index_key] = 0
                 st.session_state.score = 0
@@ -178,11 +197,11 @@ def play_level(missions, index_key, label):
     current = missions[idx]
     st.markdown(f'<div class="terminal-box"><b>MISSION {idx + 1}:</b><br>{current["task"]}</div>', unsafe_allow_html=True)
     
-    c1, c2 = st.columns([4,1])
-    with c2: 
+    col_in, col_h = st.columns([4,1])
+    with col_h: 
         if st.button("HINT", key=f"h_{index_key}_{idx}"): st.info(f"HINT: {current['hint']}")
     
-    cmd = c1.text_input("user@terminal:~$ ", key=f"i_{index_key}_{idx}").strip()
+    cmd = col_in.text_input("user@terminal:~$ ", key=f"i_{index_key}_{idx}").strip()
     
     if st.session_state.last_error:
         st.markdown(f'<div class="error-hint">⚠️ {st.session_state.last_error}</div>', unsafe_allow_html=True)
@@ -190,7 +209,6 @@ def play_level(missions, index_key, label):
     if not st.session_state.success:
         if st.button("EXECUTE", key=f"e_{index_key}_{idx}"):
             if any(re.search(p, cmd.lower()) for p in current['valid']):
-                # Points: 100, 50, or 25
                 st.session_state.score += (100 if st.session_state.attempts_this_lvl == 0 else 50 if st.session_state.attempts_this_lvl == 1 else 25)
                 st.session_state.success = True
                 st.session_state.last_error = ""
@@ -199,10 +217,11 @@ def play_level(missions, index_key, label):
             else:
                 st.session_state.attempts_this_lvl += 1
                 st.session_state.strikes += 1
-                st.session_state.last_error = f"REJECTED. Strike {st.session_state.strikes}/3"
+                st.session_state.last_error = f"COMMAND REJECTED. Strike {st.session_state.strikes}/3"
                 if st.session_state.strikes >= 3: st.session_state.locked_down = True
                 st.rerun()
     else:
+        st.success("ACCESS GRANTED.")
         if st.button("CONTINUE ➡️", key=f"n_{index_key}_{idx}"):
             st.session_state[index_key] += 1
             st.session_state.success = False
