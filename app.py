@@ -8,95 +8,90 @@ def apply_hacker_styles():
         .stApp { background-color: #000000; color: #00FF41; font-family: 'Courier New', Courier, monospace; }
         .terminal-box { border: 1px solid #00FF41; padding: 20px; background: rgba(0, 20, 0, 0.9); box-shadow: 0 0 15px #00FF41; margin-bottom: 25px; }
         .stTextInput input { background-color: #000 !important; color: #00FF41 !important; border: 1px solid #00FF41 !important; }
-        /* Error feedback styling */
         .error-hint { color: #FF3131; font-weight: bold; border: 1px solid #FF3131; padding: 10px; margin-top: 10px; background: rgba(50, 0, 0, 0.9); }
         </style>
     """, unsafe_allow_html=True)
 
-# --- 2. Mission Databases ---
+# --- 2. Mission Databases (60 Total) ---
 
 LINUX_MISSIONS = [
-    {"lvl": 1, "task": "List files in the current directory.", "valid": [r"^ls$"], "hint": "Use 'ls'"},
-    {"lvl": 2, "task": "List all files, including hidden ones.", "valid": [r"^ls\s+-a$"], "hint": "Use 'ls -a'"},
-    {"lvl": 3, "task": "Create a directory named 'infra'.", "valid": [r"^mkdir\s+infra$"], "hint": "Use 'mkdir infra'"},
-    {"lvl": 4, "task": "Change directory into 'infra'.", "valid": [r"^cd\s+infra$"], "hint": "Use 'cd infra'"},
-    {"lvl": 5, "task": "Show the current working directory path.", "valid": [r"^pwd$"], "hint": "Use 'pwd'"},
-    {"lvl": 6, "task": "Go back to the parent directory.", "valid": [r"^cd\s+\.\.$"], "hint": "Use 'cd ..'"},
-    {"lvl": 7, "task": "Create a file named 'main.tf'.", "valid": [r"^touch\s+main\.tf$"], "hint": "Use 'touch'"},
-    {"lvl": 8, "task": "Rename 'main.tf' to 'config.tf'.", "valid": [r"^mv\s+main\.tf\s+config\.tf$"], "hint": "Use 'mv [old] [new]'"},
-    {"lvl": 9, "task": "Copy 'config.tf' to 'backup.tf'.", "valid": [r"^cp\s+config\.tf\s+backup\.tf$"], "hint": "Use 'cp [src] [dst]'"},
-    {"lvl": 10, "task": "Delete 'backup.tf'.", "valid": [r"^rm\s+backup\.tf$"], "hint": "Use 'rm'"},
-    {"lvl": 11, "task": "Print 'Ready' to the terminal.", "valid": [r"^echo\s+ready$"], "hint": "Use 'echo'"},
-    {"lvl": 12, "task": "Search for 'resource' in 'config.tf'.", "valid": [r"^grep\s+resource\s+config\.tf$"], "hint": "Use 'grep'"},
-    {"lvl": 13, "task": "View the top of 'config.tf'.", "valid": [r"^head\s+config\.tf$"], "hint": "Use 'head'"},
-    {"lvl": 14, "task": "View the last 5 lines of 'config.tf'.", "valid": [r"^tail\s+-n\s+5\s+config\.tf$"], "hint": "Use 'tail -n 5'"},
-    {"lvl": 15, "task": "Clear terminal output.", "valid": [r"^clear$"], "hint": "Use 'clear'"},
-    {"lvl": 16, "task": "Open manual for 'chmod'.", "valid": [r"^man\s+chmod$"], "hint": "Use 'man'"},
-    {"lvl": 17, "task": "Make 'scan.sh' executable.", "valid": [r"^chmod\s+\+x\s+scan\.sh$"], "hint": "Use 'chmod +x'"},
-    {"lvl": 18, "task": "Ping '8.8.8.8' once.", "valid": [r"^ping\s+-c\s+1\s+8\.8\.8\.8$"], "hint": "Use 'ping -c 1'"},
-    {"lvl": 19, "task": "Show network IP addresses.", "valid": [r"^ip\s+addr$"], "hint": "Use 'ip addr'"},
-    {"lvl": 20, "task": "Show active processes.", "valid": [r"^ps\s+aux$", r"^top$"], "hint": "Use 'ps aux' or 'top'"},
-    {"lvl": 21, "task": "Check disk space usage.", "valid": [r"^df\s+-h$"], "hint": "Use 'df -h'"},
-    {"lvl": 22, "task": "Check size of 'infra' directory.", "valid": [r"^du\s+-sh\s+infra$"], "hint": "Use 'du -sh'"},
-    {"lvl": 23, "task": "Display system date.", "valid": [r"^date$"], "hint": "Use 'date'"},
-    {"lvl": 24, "task": "Kill process ID 1234.", "valid": [r"^kill\s+1234$"], "hint": "Use 'kill'"},
-    {"lvl": 25, "task": "Sort 'list.txt'.", "valid": [r"^sort\s+list\.txt$"], "hint": "Use 'sort'"},
-    {"lvl": 26, "task": "Count lines in 'config.tf'.", "valid": [r"^wc\s+-l\s+config\.tf$"], "hint": "Use 'wc -l'"},
-    {"lvl": 27, "task": "Find 'config.tf' in current tree.", "valid": [r"^find\s+\.\s+-name\s+config\.tf$"], "hint": "Use 'find'"},
-    {"lvl": 28, "task": "Combine file redirection.", "valid": [r"^cat\s+f1\s+f2\s*>\s*all\.txt$"], "hint": "Use '>' to redirect"},
-    {"lvl": 29, "task": "Change owner to 'admin'.", "valid": [r"^chown\s+admin\s+scan\.sh$"], "hint": "Use 'chown'"},
-    {"lvl": 30, "task": "Final boss: grep and wc pipe.", "valid": [r"^grep\s+resource\s+config\.tf\s*\|\s*wc\s+-l$"], "hint": "Use '|' to pipe"}
+    {"lvl": 1, "task": "List files in the current directory.", "valid": [r"^ls$"], "hint": "ls"},
+    {"lvl": 2, "task": "List all files, including hidden ones.", "valid": [r"^ls\s+-a$"], "hint": "ls -a"},
+    {"lvl": 3, "task": "Create a directory named 'infra'.", "valid": [r"^mkdir\s+infra$"], "hint": "mkdir infra"},
+    {"lvl": 4, "task": "Change directory into 'infra'.", "valid": [r"^cd\s+infra$"], "hint": "cd infra"},
+    {"lvl": 5, "task": "Show the current working directory path.", "valid": [r"^pwd$"], "hint": "pwd"},
+    {"lvl": 6, "task": "Go back to the parent directory.", "valid": [r"^cd\s+\.\.$"], "hint": "cd .."},
+    {"lvl": 7, "task": "Create a file named 'main.tf'.", "valid": [r"^touch\s+main\.tf$"], "hint": "touch main.tf"},
+    {"lvl": 8, "task": "Rename 'main.tf' to 'config.tf'.", "valid": [r"^mv\s+main\.tf\s+config\.tf$"], "hint": "mv main.tf config.tf"},
+    {"lvl": 9, "task": "Copy 'config.tf' to 'backup.tf'.", "valid": [r"^cp\s+config\.tf\s+backup\.tf$"], "hint": "cp config.tf backup.tf"},
+    {"lvl": 10, "task": "Delete 'backup.tf'.", "valid": [r"^rm\s+backup\.tf$"], "hint": "rm backup.tf"},
+    {"lvl": 11, "task": "Print 'Ready' to the terminal.", "valid": [r"^echo\s+ready$"], "hint": "echo ready"},
+    {"lvl": 12, "task": "Search for 'resource' in 'config.tf'.", "valid": [r"^grep\s+resource\s+config\.tf$"], "hint": "grep resource config.tf"},
+    {"lvl": 13, "task": "View the top of 'config.tf'.", "valid": [r"^head\s+config\.tf$"], "hint": "head config.tf"},
+    {"lvl": 14, "task": "View the last 5 lines of 'config.tf'.", "valid": [r"^tail\s+-n\s+5\s+config\.tf$"], "hint": "tail -n 5 config.tf"},
+    {"lvl": 15, "task": "Clear terminal output.", "valid": [r"^clear$"], "hint": "clear"},
+    {"lvl": 16, "task": "Open manual for 'chmod'.", "valid": [r"^man\s+chmod$"], "hint": "man chmod"},
+    {"lvl": 17, "task": "Make 'scan.sh' executable.", "valid": [r"^chmod\s+\+x\s+scan\.sh$"], "hint": "chmod +x scan.sh"},
+    {"lvl": 18, "task": "Ping '8.8.8.8' once.", "valid": [r"^ping\s+-c\s+1\s+8\.8\.8\.8$"], "hint": "ping -c 1 8.8.8.8"},
+    {"lvl": 19, "task": "Show network IP addresses.", "valid": [r"^ip\s+addr$"], "hint": "ip addr"},
+    {"lvl": 20, "task": "Show active processes.", "valid": [r"^ps\s+aux$", r"^top$"], "hint": "ps aux"},
+    {"lvl": 21, "task": "Check disk space usage.", "valid": [r"^df\s+-h$"], "hint": "df -h"},
+    {"lvl": 22, "task": "Check size of 'infra' directory.", "valid": [r"^du\s+-sh\s+infra$"], "hint": "du -sh infra"},
+    {"lvl": 23, "task": "Display system date.", "valid": [r"^date$"], "hint": "date"},
+    {"lvl": 24, "task": "Kill process ID 1234.", "valid": [r"^kill\s+1234$"], "hint": "kill 1234"},
+    {"lvl": 25, "task": "Sort 'list.txt'.", "valid": [r"^sort\s+list\.txt$"], "hint": "sort list.txt"},
+    {"lvl": 26, "task": "Count lines in 'config.tf'.", "valid": [r"^wc\s+-l\s+config\.tf$"], "hint": "wc -l config.tf"},
+    {"lvl": 27, "task": "Find 'config.tf' in current tree.", "valid": [r"^find\s+\.\s+-name\s+config\.tf$"], "hint": "find . -name config.tf"},
+    {"lvl": 28, "task": "Combine file redirection.", "valid": [r"^cat\s+f1\s+f2\s*>\s*all\.txt$"], "hint": "cat f1 f2 > all.txt"},
+    {"lvl": 29, "task": "Change owner to 'admin'.", "valid": [r"^chown\s+admin\s+scan\.sh$"], "hint": "chown admin scan.sh"},
+    {"lvl": 30, "task": "Final boss: grep and wc pipe.", "valid": [r"^grep\s+resource\s+config\.tf\s*\|\s*wc\s+-l$"], "hint": "grep resource config.tf | wc -l"}
 ]
 
 CHECKOV_MISSIONS = [
-    # --- SCANNING TARGETS ---
-    {"lvl": 1, "task": "Scan the current directory using the shorthand directory flag.", "valid": [r".*-d\s+\..*"], "hint": "The flag is -d followed by the path '.'"},
-    {"lvl": 2, "task": "Scan a specific file named 'main.tf' using the shorthand file flag.", "valid": [r".*-f\s+main\.tf.*"], "hint": "The flag is -f"},
-    
-    # --- FILTERING ---
-    {"lvl": 3, "task": "Run only checks with 'HIGH' and 'CRITICAL' severity.", "valid": [r".*--check\s+(high,critical|critical,high).*"], "hint": "Use --check [SEVERITY]"},
-    {"lvl": 4, "task": "Skip only checks with 'LOW' severity.", "valid": [r".*--skip-check\s+low.*"], "hint": "Use --skip-check [SEVERITY]"},
-    {"lvl": 5, "task": "Run only a specific check ID: CKV_AWS_20.", "valid": [r".*--check\s+ckv_aws_20.*"], "hint": "Use --check [ID]"},
-    {"lvl": 6, "task": "Limit the scan to only 'kubernetes' and 'terraform' frameworks.", "valid": [r".*--framework\s+(kubernetes,terraform|terraform,kubernetes).*"], "hint": "Use --framework [comma-separated list]"},
-
-    # --- OUTPUT & DISPLAY ---
-    {"lvl": 7, "task": "Output results in 'json' format.", "valid": [r".*-o\s+json.*"], "hint": "Use -o json"},
-    {"lvl": 8, "task": "Enable 'compact' output to remove code blocks.", "valid": [r".*--compact.*"], "hint": "The flag is --compact"},
-    {"lvl": 9, "task": "Only show failed checks in the terminal.", "valid": [r".*--quiet.*"], "hint": "The flag is --quiet"},
-    {"lvl": 10, "task": "Show all configuration settings currently being used.", "valid": [r".*--show-config.*"], "hint": "The flag is --show-config"},
-    
-    # --- FAIL LOGIC ---
-    {"lvl": 11, "task": "Ensure the exit code is 0 regardless of failures.", "valid": [r".*--soft-fail.*"], "hint": "The flag is --soft-fail"},
-    {"lvl": 12, "task": "Hard-fail the scan ONLY if 'CRITICAL' issues are found.", "valid": [r".*--hard-fail-on\s+critical.*"], "hint": "Use --hard-fail-on [SEVERITY]"},
-    {"lvl": 13, "task": "Soft-fail (exit 0) if the severity is 'LOW'.", "valid": [r".*--soft-fail-on\s+low.*"], "hint": "Use --soft-fail-on [SEVERITY]"},
-
-    # --- ADVANCED & EXTERNAL ---
-    {"lvl": 14, "task": "Enable secret scanning.", "valid": [r".*--enable-secret-scan.*"], "hint": "The flag is --enable-secret-scan"},
-    {"lvl": 15, "task": "Use an external policies directory called 'my_rules'.", "valid": [r".*--external-checks-dir\s+my_rules.*"], "hint": "The flag is --external-checks-dir"},
-    {"lvl": 16, "task": "Download external modules before scanning.", "valid": [r".*--download-external-modules\s+true.*"], "hint": "Use --download-external-modules true"},
-    {"lvl": 17, "task": "Scan a directory and create a baseline file.", "valid": [r".*--create-baseline.*"], "hint": "The flag is --create-baseline"},
-    {"lvl": 18, "task": "Run scan against an existing baseline file '.checkov.baseline'.", "valid": [r".*--baseline\s+\.checkov\.baseline.*"], "hint": "Use --baseline [FILENAME]"},
-    {"lvl": 19, "task": "Load all CLI flags from a file called 'config.yaml'.", "valid": [r".*--config-file\s+config\.yaml.*"], "hint": "The flag is --config-file"},
-    {"lvl": 20, "task": "Evaluate Terraform variables using 'dev.tfvars'.", "valid": [r".*--var-file\s+dev\.tfvars.*"], "hint": "Use --var-file [FILENAME]"},
-
-    # --- ENRICHMENT & MISC ---
-    {"lvl": 21, "task": "Enable deep analysis for plan enrichment.", "valid": [r".*--deep-analysis.*"], "hint": "The flag is --deep-analysis"},
-    {"lvl": 22, "task": "Set the repo root for plan enrichment to '/src'.", "valid": [r".*--repo-root-for-plan-enrichment\s+/src.*"], "hint": "The flag is --repo-root-for-plan-enrichment"},
-    {"lvl": 23, "task": "Skip a specific path called 'tests/'.", "valid": [r".*--skip-path\s+tests.*"], "hint": "Use --skip-path [PATH]"},
-    {"lvl": 24, "task": "Skip the 'arm' framework entirely.", "valid": [r".*--skip-framework\s+arm.*"], "hint": "Use --skip-framework [FRAMEWORK]"},
-    {"lvl": 25, "task": "List available checks for 'dockerfile' only.", "valid": [r".*--list.*--framework\s+dockerfile.*"], "hint": "Use --list and --framework"},
-    {"lvl": 26, "task": "Output results to a specific directory path '/tmp/results'.", "valid": [r".*--output-file-path\s+/tmp/results.*"], "hint": "The flag is --output-file-path"},
-    {"lvl": 27, "task": "Set a specific BC ID for platform integration.", "valid": [r".*--bc-id\s+.*"], "hint": "The flag is --bc-id"},
-    {"lvl": 28, "task": "Show Checkov version.", "valid": [r".*(-v|--version).*"], "hint": "Use -v"},
-    {"lvl": 29, "task": "Output results in both 'cli' and 'sarif' formats.", "valid": [r".*-o\s+(cli,sarif|sarif,cli).*"], "hint": "Use -o cli,sarif"},
-    {"lvl": 30, "task": "FINAL BOSS: Quiet, Compact, Soft-Fail, and scan directory '.'.", "valid": [r".*--quiet.*--compact.*--soft-fail.*-d\s+\..*"], "hint": "Combine --quiet, --compact, --soft-fail, and -d ."}
+    {"lvl": 1, "task": "Scan the current directory (shorthand).", "valid": [r".*-d\s+\..*"], "hint": "-d ."},
+    {"lvl": 2, "task": "Scan 'main.tf' (shorthand).", "valid": [r".*-f\s+main\.tf.*"], "hint": "-f main.tf"},
+    {"lvl": 3, "task": "Run all checks 'HIGH' and above (threshold).", "valid": [r".*--check\s+high.*"], "hint": "Checkov is inclusive. Use --check HIGH."},
+    {"lvl": 4, "task": "Skip all checks 'MEDIUM' and below (threshold).", "valid": [r".*--skip-check\s+medium.*"], "hint": "Use --skip-check MEDIUM."},
+    {"lvl": 5, "task": "Run only check ID: CKV_AWS_20.", "valid": [r".*--check\s+ckv_aws_20.*"], "hint": "--check CKV_AWS_20"},
+    {"lvl": 6, "task": "Limit scan to 'kubernetes' framework.", "valid": [r".*--framework\s+kubernetes.*"], "hint": "--framework kubernetes"},
+    {"lvl": 7, "task": "Output in 'sarif' format.", "valid": [r".*-o\s+sarif.*"], "hint": "-o sarif"},
+    {"lvl": 8, "task": "Enable compact output.", "valid": [r".*--compact.*"], "hint": "--compact"},
+    {"lvl": 9, "task": "Quiet mode (failures only).", "valid": [r".*--quiet.*"], "hint": "--quiet"},
+    {"lvl": 10, "task": "Show current configuration.", "valid": [r".*--show-config.*"], "hint": "--show-config"},
+    {"lvl": 11, "task": "Enable global soft-fail.", "valid": [r".*--soft-fail(?!\-on).*"], "hint": "--soft-fail"},
+    {"lvl": 12, "task": "Hard-fail ONLY on 'CRITICAL' findings.", "valid": [r".*--hard-fail-on\s+critical.*"], "hint": "--hard-fail-on CRITICAL"},
+    {"lvl": 13, "task": "Soft-fail ONLY on 'LOW' findings.", "valid": [r".*--soft-fail-on\s+low.*"], "hint": "--soft-fail-on LOW"},
+    {"lvl": 14, "task": "Scan for secrets.", "valid": [r".*--enable-secret-scan.*"], "hint": "--enable-secret-scan"},
+    {"lvl": 15, "task": "Use external checks directory 'custom'.", "valid": [r".*--external-checks-dir\s+custom.*"], "hint": "--external-checks-dir custom"},
+    {"lvl": 16, "task": "Download external modules.", "valid": [r".*--download-external-modules\s+true.*"], "hint": "--download-external-modules true"},
+    {"lvl": 17, "task": "Create a new baseline file.", "valid": [r".*--create-baseline.*"], "hint": "--create-baseline"},
+    {"lvl": 18, "task": "Use existing baseline '.checkov.baseline'.", "valid": [r".*--baseline\s+\.checkov\.baseline.*"], "hint": "--baseline .checkov.baseline"},
+    {"lvl": 19, "task": "Use config file 'scan-policy.yaml'.", "valid": [r".*--config-file\s+scan-policy\.yaml.*"], "hint": "--config-file scan-policy.yaml"},
+    {"lvl": 20, "task": "Load vars from 'prod.tfvars'.", "valid": [r".*--var-file\s+prod\.tfvars.*"], "hint": "--var-file prod.tfvars"},
+    {"lvl": 21, "task": "Enable deep analysis.", "valid": [r".*--deep-analysis.*"], "hint": "--deep-analysis"},
+    {"lvl": 22, "task": "Set repo root to '/app'.", "valid": [r".*--repo-root-for-plan-enrichment\s+/app.*"], "hint": "--repo-root-for-plan-enrichment /app"},
+    {"lvl": 23, "task": "Skip path 'vendor/'.", "valid": [r".*--skip-path\s+vendor.*"], "hint": "--skip-path vendor"},
+    {"lvl": 24, "task": "Skip 'dockerfile' framework.", "valid": [r".*--skip-framework\s+dockerfile.*"], "hint": "--skip-framework dockerfile"},
+    {"lvl": 25, "task": "List checks for 'arm' framework.", "valid": [r".*--list.*--framework\s+arm.*"], "hint": "--list --framework arm"},
+    {"lvl": 26, "task": "Set output path to './reports'.", "valid": [r".*--output-file-path\s+\./reports.*"], "hint": "--output-file-path ./reports"},
+    {"lvl": 27, "task": "Set BC ID 'my-key'.", "valid": [r".*--bc-id\s+my-key.*"], "hint": "--bc-id my-key"},
+    {"lvl": 28, "task": "Check version.", "valid": [r".*(-v|--version).*"], "hint": "-v"},
+    {"lvl": 29, "task": "Output JSON and JUnit XML.", "valid": [r".*-o\s+(json,junitxml|junitxml,json).*"], "hint": "-o json,junitxml"},
+    {"lvl": 30, "task": "FINAL BOSS: Quiet, Soft-Fail, JSON, Directory '.'", "valid": [r".*--quiet.*--soft-fail.*-o\s+json.*-d\s+\..*"], "hint": "--quiet --soft-fail -o json -d ."}
 ]
 
-# --- 3. Session State ---
-for key, val in {'linux_idx': 0, 'checkov_idx': 0, 'health': 5, 'last_error': "", 'success': False}.items():
+# --- 3. Session State Initialization ---
+state_defaults = {
+    'linux_idx': 0, 
+    'checkov_idx': 0, 
+    'health': 5, 
+    'last_error': "", 
+    'success': False
+}
+for key, val in state_defaults.items():
     if key not in st.session_state: st.session_state[key] = val
 
-# --- 4. Main UI ---
+# --- 4. UI Rendering ---
 apply_hacker_styles()
 
 with st.sidebar:
@@ -110,57 +105,45 @@ tab_linux, tab_checkov, tab_ref = st.tabs(["📂 LINUX QUEST", "🛡️ CHECKOV 
 
 with tab_ref:
     st.header("Checkov Parameter Reference")
-    st.caption("Based on: checkov.io/2.Basics/CLI%20Command%20Reference.html")
+    st.caption("Threshold Logic: Checks equal to or above the chosen severity are included.")
     st.markdown("""
-    ### 🎯 Scanning Targets
-    - `-d, --directory`: Folder to scan.
-    - `-f, --file`: File to scan.
-    
-    ### 🔍 Filtering & Suppression
-    - `--check [ID/SEV]`: Run only these checks.
-    - `--skip-check [ID/SEV]`: Exclude these checks.
-    - `--framework [type]`: limit to terraform, kubernetes, dockerfile, arm, etc.
-    - `--skip-path [path]`: Ignore specific folders.
-    - `--skip-framework [type]`: Exclude specific engines.
+    ### 🎯 Severity Thresholds
+    - `LOW`: Low, Medium, High, Critical.
+    - `MEDIUM`: Medium, High, Critical.
+    - `HIGH`: High, Critical.
+    - `CRITICAL`: Only Critical.
 
-    ### 🛠️ Execution Logic
-    - `--soft-fail`: Exit with code 0 regardless.
-    - `--soft-fail-on [ID/SEV]`: Only exit 0 for these specific items.
-    - `--hard-fail-on [ID/SEV]`: Force exit code 1 for these specific items.
-    
-    ### 📊 Output & Analysis
-    - `-o, --output`: formats (cli, json, sarif, junitxml).
-    - `--quiet`: Failure output only.
-    - `--compact`: No code snippets.
-    - `--create-baseline`: Mark current errors as 'known'.
-    - `--baseline [file]`: Use the baseline file.
-    - `--enable-secret-scan`: Look for leaked keys.
+    ### 🛠️ Key Flags
+    - `--check [SEV/ID]`: Include only these.
+    - `--skip-check [SEV/ID]`: Exclude these.
+    - `--soft-fail`: Global exit 0.
+    - `--soft-fail-on [SEV]`: Exit 0 specifically for these.
+    - `--hard-fail-on [SEV]`: Force exit 1 for these.
     """)
 
 def play_level(missions, index_key):
     idx = st.session_state[index_key]
     if idx >= len(missions):
-        st.success("SECTOR COMPLETE.")
+        st.success("SECTOR SECURED. ACCESS LEVEL: ELITE.")
         return
     
     current = missions[idx]
     st.markdown(f'<div class="terminal-box"><b>MISSION {idx + 1}:</b><br>{current["task"]}</div>', unsafe_allow_html=True)
     
-    # Immediate Feedback Logic
     if st.session_state.last_error:
         st.markdown(f'<div class="error-hint">⚠️ SYNTAX ERROR: {st.session_state.last_error}</div>', unsafe_allow_html=True)
 
-    cmd = st.text_input("user@terminal:~$ ", key=f"in_{index_key}_{idx}").strip()
+    cmd = st.text_input("user@terminal:~$ ", key=f"in_{index_key}_{idx}", placeholder="Type command here...").strip()
     
     if not st.session_state.success:
-        if st.button("RUN COMMAND", key=f"ex_{index_key}_{idx}"):
+        if st.button("EXECUTE", key=f"ex_{index_key}_{idx}"):
             if any(re.search(p, cmd.lower()) for p in current['valid']):
                 st.session_state.success = True
-                st.session_state.last_error = "" # Clear errors on success
+                st.session_state.last_error = ""
                 st.rerun()
             else:
                 st.session_state.health -= 1
-                st.session_state.last_error = current['hint'] # Set the hint as the error message
+                st.session_state.last_error = current['hint']
                 st.rerun()
     else:
         st.success("ACCESS GRANTED.")
